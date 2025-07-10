@@ -59,7 +59,7 @@
             enable = lib.mkEnableOption "Enable the ctrld service";
             package = lib.mkPackageOption self.packages.${pkgs.system} "ctrld" { };
             settings = lib.mkOption {
-              type = lib.types.attrs;
+              type = with lib.types; either attrs path;
               default = {
                 listener = {
                   "0" = {
@@ -122,9 +122,15 @@
                 NoNewPrivileges = true;
                 RestrictSUIDSGID = true;
 
-                ExecStart = "${lib.getExe cfg.package} run --config ${
-                  (pkgs.formats.toml { }).generate "ctrld.toml" cfg.settings
-                }";
+                ExecStart =
+                  let
+                    path =
+                      if builtins.isPath cfg.settings then
+                        cfg.settings
+                      else
+                        (pkgs.formats.toml { }).generate "ctrld.toml" cfg.settings;
+                  in
+                  "${lib.getExe cfg.package} run --config ${path}";
               };
             };
           };
