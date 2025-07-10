@@ -125,7 +125,7 @@
                 ExecStart =
                   let
                     path =
-                      if builtins.isPath cfg.settings then
+                      if !builtins.isAttrs cfg.settings then
                         cfg.settings
                       else
                         (pkgs.formats.toml { }).generate "ctrld.toml" cfg.settings;
